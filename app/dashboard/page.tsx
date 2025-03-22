@@ -11,6 +11,8 @@ import { Check, Clock, AlertTriangle, Bell, Pill, Calendar } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { motion } from "framer-motion"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { db } from "@/lib/firebase"
+
 
 // Types for prescription data
 interface Prescription {
@@ -48,7 +50,6 @@ export default function Dashboard() {
 
     setLoading(true)
 
-    const db = getFirebaseFirestore()
     if (!db) {
       setError("Firebase is not initialized")
       setLoading(false)

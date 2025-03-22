@@ -6,6 +6,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/components/auth-provider"
 import { Sidebar } from "@/components/sidebar"
+import { Check, AlertTriangle, Clock, Plus, ChevronDown, ChevronUp, Pill } from "lucide-react";
 
 // Dashboard layout component - Wraps all dashboard pages
 export default function DashboardLayout({
