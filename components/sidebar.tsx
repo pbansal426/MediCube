@@ -12,6 +12,7 @@ import {
   LogOut,
   Menu,
   X,
+  Brain,
 } from "lucide-react";
 
 interface NavItem {
@@ -26,6 +27,7 @@ const navItems: NavItem[] = [
   { label: "Logs", href: "/dashboard/logs", icon: List },
   { label: "Settings", href: "/dashboard/settings", icon: Settings },
   { label: "Caretaker", href: "/dashboard/caretaker", icon: Heart },
+  { label: "AI Assistant", href: "/dashboard/ai-assistant", icon: Brain },
 ];
 
 export function Sidebar() {
@@ -34,21 +36,21 @@ export function Sidebar() {
 
   return (
     <aside
-      className={`h-full border-r border-gray-200 bg-white shadow transition-all ${
+      className={`h-full border-r border-gray-200 bg-white shadow transition-all duration-300 ${
         isOpen ? "w-64" : "w-16"
       }`}
     >
       {/* Top bar */}
       <div className="flex items-center justify-between p-4 border-b">
         <span
-          className={`font-bold text-lg text-primary origin-left transition-transform duration-300 ${
-            isOpen ? "scale-100" : "scale-0"
+          className={`font-bold text-lg text-primary origin-left transition-all duration-300 ${
+            isOpen ? "scale-100 opacity-100" : "scale-0 opacity-0"
           }`}
         >
           CareCapsule
         </span>
         <button
-          className="p-1 text-gray-600 hover:bg-gray-100 rounded focus:outline-none md:hidden"
+          className="p-1 text-gray-600 hover:bg-gray-100 rounded focus:outline-none"
           onClick={() => setIsOpen(!isOpen)}
           aria-label="Toggle sidebar"
         >
@@ -73,8 +75,8 @@ export function Sidebar() {
             >
               <Icon className="h-5 w-5 flex-shrink-0" />
               <span
-                className={`whitespace-nowrap overflow-hidden transition-all ${
-                  isOpen ? "opacity-100" : "opacity-0 w-0"
+                className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${
+                  isOpen ? "opacity-100 ml-1" : "opacity-0 w-0"
                 }`}
               >
                 {label}
@@ -84,7 +86,7 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Logout (example) */}
+      {/* Logout */}
       <div className="mt-auto border-t flex items-center">
         <button
           className="flex items-center gap-3 px-4 py-2 w-full text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
@@ -92,7 +94,9 @@ export function Sidebar() {
         >
           <LogOut className="h-5 w-5 flex-shrink-0" />
           <span
-            className={`transition-all ${isOpen ? "opacity-100" : "opacity-0 w-0"}`}
+            className={`transition-all duration-300 ${
+              isOpen ? "opacity-100 ml-1" : "opacity-0 w-0"
+            }`}
           >
             Logout
           </span>
