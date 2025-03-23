@@ -24,10 +24,10 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: Home },
   { label: "Prescriptions", href: "/dashboard/prescriptions", icon: Pill },
+  { label: "AI Assistant", href: "/dashboard/ai-assistant", icon: Brain },
+  { label: "Caretaker", href: "/dashboard/caretaker", icon: Heart },
   { label: "Logs", href: "/dashboard/logs", icon: List },
   { label: "Settings", href: "/dashboard/settings", icon: Settings },
-  { label: "Caretaker", href: "/dashboard/caretaker", icon: Heart },
-  { label: "AI Assistant", href: "/dashboard/ai-assistant", icon: Brain },
 ];
 
 export function Sidebar() {
@@ -36,16 +36,14 @@ export function Sidebar() {
 
   return (
     <aside
-      className={`h-full border-r border-gray-200 bg-white shadow transition-all duration-300 ${
-        isOpen ? "w-64" : "w-16"
-      }`}
+      className={`h-full border-r border-gray-200 bg-white shadow transition-all duration-300 ${isOpen ? "w-64" : "w-16"
+        }`}
     >
       {/* Top bar */}
       <div className="flex items-center justify-between p-4 border-b">
         <span
-          className={`font-bold text-lg text-primary origin-left transition-all duration-300 ${
-            isOpen ? "scale-100 opacity-100" : "scale-0 opacity-0"
-          }`}
+          className={`font-bold text-lg text-primary origin-left transition-all duration-300 ${isOpen ? "scale-100 opacity-100" : "scale-0 opacity-0"
+            }`}
         >
           CareCapsule
         </span>
@@ -66,18 +64,16 @@ export function Sidebar() {
             <Link
               key={label}
               href={href}
-              className={`flex items-center gap-3 px-4 py-2 text-sm font-medium transition-colors ${
-                active
+              className={`flex items-center gap-3 px-4 py-2 text-sm font-medium transition-colors ${active
                   ? "bg-primary/10 text-primary"
                   : "text-gray-600 hover:bg-gray-100"
-              }`}
+                }`}
               aria-current={active ? "page" : undefined}
             >
               <Icon className="h-5 w-5 flex-shrink-0" />
               <span
-                className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${
-                  isOpen ? "opacity-100 ml-1" : "opacity-0 w-0"
-                }`}
+                className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isOpen ? "opacity-100 ml-1" : "opacity-0 w-0"
+                  }`}
               >
                 {label}
               </span>
@@ -94,9 +90,8 @@ export function Sidebar() {
         >
           <LogOut className="h-5 w-5 flex-shrink-0" />
           <span
-            className={`transition-all duration-300 ${
-              isOpen ? "opacity-100 ml-1" : "opacity-0 w-0"
-            }`}
+            className={`transition-all duration-300 ${isOpen ? "opacity-100 ml-1" : "opacity-0 w-0"
+              }`}
           >
             Logout
           </span>
