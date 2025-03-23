@@ -45,7 +45,7 @@ export function Sidebar() {
           className={`font-bold text-lg text-primary origin-left transition-all duration-300 ${isOpen ? "scale-100 opacity-100" : "scale-0 opacity-0"
             }`}
         >
-          CareCapsule
+          MediCube
         </span>
         <button
           className="p-1 text-gray-600 hover:bg-gray-100 rounded focus:outline-none"
@@ -65,8 +65,8 @@ export function Sidebar() {
               key={label}
               href={href}
               className={`flex items-center gap-3 px-4 py-2 text-sm font-medium transition-colors ${active
-                  ? "bg-primary/10 text-primary"
-                  : "text-gray-600 hover:bg-gray-100"
+                ? "bg-primary/10 text-primary"
+                : "text-gray-600 hover:bg-gray-100"
                 }`}
               aria-current={active ? "page" : undefined}
             >
