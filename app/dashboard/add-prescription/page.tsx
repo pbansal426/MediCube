@@ -78,6 +78,7 @@ export default function AddPrescriptionPage() {
         missed: false,
         createdAt: Timestamp.now(),
       })
+      
 
       // Show success message
       setSuccess(true)
