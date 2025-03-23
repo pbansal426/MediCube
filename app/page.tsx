@@ -2,7 +2,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 
-// Home page component - Landing page for the CareCapsule application
+// Home page component - Landing page for the MediCube application
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
@@ -14,7 +14,7 @@ export default function Home() {
               <div className="flex flex-col justify-center space-y-4">
                 <div className="space-y-2">
                   <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none text-primary">
-                    CareCapsule
+                    MediCube
                   </h1>
                   <p className="max-w-[600px] text-gray-500 md:text-xl dark:text-gray-400">
                     Smart pill dispenser system that helps elderly people manage medications while keeping caregivers
@@ -72,7 +72,7 @@ export default function Home() {
               <div className="space-y-2">
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl text-primary">Key Features</h2>
                 <p className="max-w-[900px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
-                  CareCapsule helps manage medications with smart technology and real-time alerts.
+                  MediCube helps manage medications with smart technology and real-time alerts.
                 </p>
               </div>
             </div>
@@ -154,7 +154,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          © {new Date().getFullYear()} CareCapsule. All rights reserved.
+          © {new Date().getFullYear()} MediCube. All rights reserved.
         </p>
         <nav className="sm:ml-auto flex gap-4 sm:gap-6">
           <Link className="text-xs hover:underline underline-offset-4" href="#">

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { collection, query, onSnapshot, doc, updateDoc, type Timestamp } from "firebase/firestore"
+import { collection, query, onSnapshot, doc, updateDoc, Timestamp, getDoc, addDoc } from "firebase/firestore"
 import { getFirebaseFirestore } from "@/lib/firebase"
 import { useAuth } from "@/components/auth-provider"
 import { Button } from "@/components/ui/button"
@@ -12,6 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { motion } from "framer-motion"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { db } from "@/lib/firebase"
+
 
 
 // Types for prescription data
@@ -25,6 +26,7 @@ interface Prescription {
   missed: boolean
 }
 
+
 // Dashboard page component
 export default function Dashboard() {
   const { user } = useAuth()
@@ -37,6 +39,7 @@ export default function Dashboard() {
     taken: 0,
     missed: 0,
     upcoming: 0,
+    unique: 0,
   })
 
   // Set mounted state after component mounts
@@ -77,15 +80,33 @@ export default function Dashboard() {
         prescriptionData.sort((a, b) => a.scheduledTime.toMillis() - b.scheduledTime.toMillis())
 
         // Calculate stats
+        let uniqueMedications = new Set();
+
+        prescriptionData.forEach((p) => {
+          uniqueMedications.add(p.id);  // Or p.name if you prefer to count by name
+        });
+
         const taken = prescriptionData.filter((p) => p.taken).length
         const missed = prescriptionData.filter((p) => p.missed).length
         const upcoming = prescriptionData.filter((p) => !p.taken && !p.missed).length
+
+        // Manually decrease unique count for medications that have been marked as taken
+        prescriptionData.forEach((p) => {
+          if (p.taken) {
+            uniqueMedications.delete(p.id);  // Remove from unique set if it's taken
+          }
+        });
+
+        console.log(prescriptionData);
+        console.log('Unique Medications Count:', uniqueMedications.size);
+
 
         setStats({
           total: prescriptionData.length,
           taken,
           missed,
           upcoming,
+          unique: uniqueMedications.size,
         })
 
         setPrescriptions(prescriptionData)
@@ -102,21 +123,39 @@ export default function Dashboard() {
     return () => unsubscribe()
   }, [user, mounted])
 
-  // Mark prescription as taken manually
+
+  // Mark prescription as taken manually and create a new copy scheduled 1 day later
   const markAsTaken = async (id: string) => {
     if (!user) return
 
     try {
-      const db = getFirebaseFirestore()
-      if (!db) {
-        throw new Error("Firebase is not initialized")
+      const prescriptionRef = doc(db, "users", user.uid, "prescriptions", id)
+      const prescriptionSnapshot = await getDoc(prescriptionRef)
+
+      if (!prescriptionSnapshot.exists()) {
+        throw new Error("Prescription not found")
       }
 
-      const prescriptionRef = doc(db, "users", user.uid, "prescriptions", id)
+      const prescriptionData = prescriptionSnapshot.data() as Prescription
+
+      // Update the current prescription to mark as taken
       await updateDoc(prescriptionRef, {
         taken: true,
         missed: false,
       })
+
+      // Create a new prescription for the next day at the same time
+      const newPrescription = {
+        ...prescriptionData,
+        scheduledTime: Timestamp.fromDate(new Date(prescriptionData.scheduledTime.toDate().getTime() + 24 * 60 * 60 * 1000)), // 24 hours later
+        taken: false, // The new prescription is not taken
+        missed: false, // The new prescription is not missed
+      }
+
+      const prescriptionsRef = collection(db, "users", user.uid, "prescriptions")
+      await addDoc(prescriptionsRef, newPrescription)
+
+      console.log("Prescription marked as taken and new prescription scheduled for tomorrow.")
     } catch (error) {
       console.error("Error updating prescription:", error)
       setError("Failed to update prescription status.")
@@ -128,30 +167,54 @@ export default function Dashboard() {
     const now = new Date()
     const scheduledTime = prescription.scheduledTime.toDate()
 
-    if (prescription.taken) {
-      return { status: "taken", label: "Taken", icon: Check, color: "bg-green-100 text-green-800" }
+    // Compare both the date and time
+    const sameDay =
+      now.getFullYear() === scheduledTime.getFullYear() &&
+      now.getMonth() === scheduledTime.getMonth() &&
+      now.getDate() === scheduledTime.getDate()
+
+    const scheduledHours = scheduledTime.getHours()
+    const scheduledMinutes = scheduledTime.getMinutes()
+
+    // Get the current time (hour, minute)
+    const nowHours = now.getHours()
+    const nowMinutes = now.getMinutes()
+
+    // If the prescription is scheduled for today but has not passed
+    if (sameDay) {
+      const scheduledToday = new Date(now)
+      scheduledToday.setHours(scheduledHours, scheduledMinutes, 0, 0)
+
+      const thirtyMinutesLater = new Date(scheduledToday.getTime() + 30 * 60000)
+
+      if (now < scheduledToday) {
+        // Prescription is upcoming
+        return { status: "upcoming", label: "Upcoming", icon: Clock, color: "bg-blue-100 text-blue-800" }
+      } else if (now >= scheduledToday && now <= thirtyMinutesLater && !prescription.taken) {
+        // Prescription is due but not taken yet (within the 30-minute window)
+        return { status: "due", label: "Due Now", icon: Bell, color: "bg-yellow-100 text-yellow-800" }
+      } else if (now > thirtyMinutesLater && !prescription.taken) {
+        // Prescription missed (more than 30 minutes late)
+
+
+
+        return { status: "missed", label: "Missed", icon: AlertTriangle, color: "bg-red-100 text-red-800" }
+      } else if (prescription.taken) {
+        // Prescription taken on time
+        return { status: "taken", label: "Taken", icon: Check, color: "bg-green-100 text-green-800" }
+      }
     }
 
-    if (prescription.missed) {
-      return { status: "missed", label: "Missed", icon: AlertTriangle, color: "bg-red-100 text-red-800" }
-    }
-
-    if (scheduledTime > now) {
+    // If the prescription is scheduled for a future day, don't allow marking as taken
+    if (now < scheduledTime) {
       return { status: "upcoming", label: "Upcoming", icon: Clock, color: "bg-blue-100 text-blue-800" }
     }
 
-    // If scheduled time has passed but not marked as taken or missed
-    if (scheduledTime < now && !prescription.taken) {
-      // If more than 30 minutes have passed, consider it missed
-      const thirtyMinutesLater = new Date(scheduledTime.getTime() + 30 * 60000)
-      if (now > thirtyMinutesLater) {
-        return { status: "missed", label: "Missed", icon: AlertTriangle, color: "bg-red-100 text-red-800" }
-      }
-      return { status: "due", label: "Due Now", icon: Bell, color: "bg-yellow-100 text-yellow-800" }
-    }
-
-    return { status: "upcoming", label: "Upcoming", icon: Clock, color: "bg-blue-100 text-blue-800" }
+    // If the prescription is for a past day (should never happen unless there's an issue)
+    return { status: "missed", label: "Missed", icon: AlertTriangle, color: "bg-red-100 text-red-800" }
   }
+
+
 
   // Format date for display
   const formatTime = (timestamp: Timestamp) => {
@@ -159,32 +222,43 @@ export default function Dashboard() {
     return new Intl.DateTimeFormat("en-US", {
       hour: "numeric",
       minute: "2-digit",
-      hour12: true,
-      month: "short",
-      day: "numeric",
+      hour12: true
     }).format(date)
   }
+
 
   // Calculate time remaining
   const getTimeRemaining = (timestamp: Timestamp) => {
     const now = new Date()
     const scheduledTime = timestamp.toDate()
 
-    if (scheduledTime < now) {
-      return "Past due"
+    // Check if the scheduled time is for today
+    const sameDay =
+      now.getFullYear() === scheduledTime.getFullYear() &&
+      now.getMonth() === scheduledTime.getMonth() &&
+      now.getDate() === scheduledTime.getDate()
+
+    if (sameDay) {
+      const scheduledToday = new Date(now)
+      scheduledToday.setHours(scheduledTime.getHours(), scheduledTime.getMinutes(), 0, 0)
+
+      if (scheduledToday < now) {
+        return "Past due"
+      }
+
+      const diffMs = scheduledToday.getTime() - now.getTime()
+      const diffHrs = Math.floor(diffMs / (1000 * 60 * 60))
+      const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
+
+      if (diffHrs > 0) {
+        return `${diffHrs}h ${diffMins}m`
+      }
+
+      return `${diffMins}m`
     }
 
-    const diffMs = scheduledTime.getTime() - now.getTime()
-    const diffHrs = Math.floor(diffMs / (1000 * 60 * 60))
-    const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
-
-    if (diffHrs > 0) {
-      return `${diffHrs}h ${diffMins}m`
-    }
-
-    return `${diffMins}m`
+    return "Scheduled for tomorrow"
   }
-
   // Get today's date in a readable format
   const getTodayDate = () => {
     return new Date().toLocaleDateString("en-US", {
@@ -195,6 +269,38 @@ export default function Dashboard() {
     })
   }
 
+  // Function to check and update missed status
+  const checkPrescriptionStatus = () => {
+    const now = new Date();
+
+    setPrescriptions((prevPrescriptions) =>
+      prevPrescriptions.map((prescription) => {
+        const scheduledTime = prescription.scheduledTime.toDate();
+        const thirtyMinutesLater = new Date(scheduledTime.getTime() + 30 * 60000);
+
+        // Check if the prescription is missed (more than 30 minutes late)
+        if (now > thirtyMinutesLater && !prescription.taken && !prescription.missed) {
+          // Only update if not already missed
+          return { ...prescription, missed: true };
+        }
+        return prescription;
+      })
+    );
+  };
+
+  // UseEffect to run once when the component mounts
+  useEffect(() => {
+    // Call the function initially
+    checkPrescriptionStatus();
+
+    // Optional: Set an interval to check periodically (e.g., every 30 minutes)
+    const intervalId = setInterval(checkPrescriptionStatus, 30 * 60 * 1000); // Every 30 minutes
+
+    return () => {
+      // Clean up the interval when the component is unmounted
+      clearInterval(intervalId);
+    };
+  }, []);
   // Don't render anything during SSR
   if (!mounted) {
     return (
@@ -238,7 +344,7 @@ export default function Dashboard() {
             </div>
             <div>
               <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total Medications</p>
-              <h3 className="text-2xl font-bold">{stats.total}</h3>
+              <h3 className="text-2xl font-bold">{stats.unique}</h3>
             </div>
           </CardContent>
         </Card>

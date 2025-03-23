@@ -7,7 +7,7 @@ import { AuthProvider } from "@/components/auth-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "CareCapsule - Smart Pill Dispenser",
+  title: "MediCube - Smart Pill Dispenser",
   description:
     "Smart pill dispenser system that helps elderly people manage medications while keeping caregivers informed.",
 }

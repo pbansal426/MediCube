@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from 'next/link';
 import {
   collection,
   query,
@@ -129,12 +130,13 @@ export default function PrescriptionsPage() {
       )}
 
       <div className="flex justify-end mb-4">
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Prescription
-        </Button>
+        <Link href="/dashboard/add-prescription">
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Prescription
+          </Button>
+        </Link>
       </div>
-
       {loading ? (
         <p className="text-gray-600">Loading...</p>
       ) : prescriptions.length === 0 ? (
