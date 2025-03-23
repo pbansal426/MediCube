@@ -1,62 +1,37 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
+import { useState } from "react";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { AlertCircle, Send, Loader2, Brain, Pill, Info, AlertTriangle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { motion, AnimatePresence } from "framer-motion";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { AlertCircle, Send, Loader2, Brain, Pill, Info, AlertTriangle } from "lucide-react"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { motion, AnimatePresence } from "framer-motion"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+// OpenAI API integration
+const getAIResponse = async (symptoms: string) => {
+  try {
+    const response = await fetch("/api/ai-assistant", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ symptoms }),
+    });
 
-// Mock AI response function (replace with actual OpenAI API call in production)
-const getMockAIResponse = async (
-  symptoms: string,
-): Promise<{
-  medications: string[]
-  dosage: string
-  sideEffects: string[]
-}> => {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 1500))
+    if (!response.ok) {
+      throw new Error(`API request failed with status ${response.status}`);
+    }
 
-  // Mock responses based on symptoms
-  if (symptoms.toLowerCase().includes("headache")) {
-    return {
-      medications: ["Acetaminophen (Tylenol)", "Ibuprofen (Advil, Motrin)"],
-      dosage:
-        "Acetaminophen: 500-1000mg every 4-6 hours as needed (max 4000mg/day)\nIbuprofen: 200-400mg every 4-6 hours as needed (max 1200mg/day)",
-      sideEffects: [
-        "Stomach upset",
-        "Liver damage (with high doses of acetaminophen)",
-        "Kidney issues (with prolonged use of ibuprofen)",
-      ],
-    }
-  } else if (symptoms.toLowerCase().includes("cold") || symptoms.toLowerCase().includes("flu")) {
-    return {
-      medications: ["Acetaminophen (Tylenol)", "Decongestants", "Cough suppressants"],
-      dosage: "Follow package directions for over-the-counter cold medications",
-      sideEffects: ["Drowsiness", "Dry mouth", "Insomnia (with some decongestants)"],
-    }
-  } else if (symptoms.toLowerCase().includes("allergy")) {
-    return {
-      medications: ["Cetirizine (Zyrtec)", "Loratadine (Claritin)", "Fexofenadine (Allegra)"],
-      dosage: "Most antihistamines: 1 tablet daily",
-      sideEffects: ["Drowsiness (less common with newer antihistamines)", "Dry mouth", "Dizziness"],
-    }
-  } else {
-    return {
-      medications: ["Please consult with a healthcare professional for proper diagnosis and treatment"],
-      dosage: "Medication and dosage should be determined by a healthcare provider",
-      sideEffects: [
-        "All medications may have side effects",
-        "Always read medication labels and follow healthcare provider advice",
-      ],
-    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching AI response:", error);
+    throw new Error("Failed to fetch response from AI");
   }
-}
+};
 
 // Common symptom suggestions
 const symptomSuggestions = [
@@ -65,49 +40,49 @@ const symptomSuggestions = [
   "I have seasonal allergies with itchy eyes",
   "I have muscle pain after exercise",
   "I'm having trouble sleeping",
-]
+];
 
 // AI Assistant page component
 export default function AIAssistantPage() {
-  const [symptoms, setSymptoms] = useState("")
+  const [symptoms, setSymptoms] = useState("");
   const [response, setResponse] = useState<{
-    medications: string[]
-    dosage: string
-    sideEffects: string[]
-  } | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [activeTab, setActiveTab] = useState("medications")
+    medications: string[];
+    dosage: string;
+    sideEffects: string[];
+  } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState("medications");
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!symptoms.trim()) {
-      setError("Please enter your symptoms")
-      return
+      setError("Please enter your symptoms");
+      return;
     }
 
-    setLoading(true)
-    setError("")
+    setLoading(true);
+    setError("");
 
     try {
-      // Get AI response (mock function for now)
-      const aiResponse = await getMockAIResponse(symptoms)
-      setResponse(aiResponse)
-      setActiveTab("medications")
+      // Get AI response (replace mock with actual API request)
+      const aiResponse = await getAIResponse(symptoms);
+      setResponse(aiResponse);
+      setActiveTab("medications");
     } catch (error) {
-      console.error("Error getting AI response:", error)
-      setError("Failed to get medication suggestions. Please try again.")
+      console.error("Error getting AI response:", error);
+      setError("Failed to get medication suggestions. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // Add a suggestion to the textarea
   const addSuggestion = (suggestion: string) => {
-    setSymptoms(suggestion)
-  }
+    setSymptoms(suggestion);
+  };
 
   return (
     <div className="container mx-auto p-4 md:p-6">
@@ -322,6 +297,5 @@ export default function AIAssistantPage() {
         </motion.div>
       </div>
     </div>
-  )
+  );
 }
-
