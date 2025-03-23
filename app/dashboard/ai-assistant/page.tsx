@@ -26,6 +26,7 @@ const getAIResponse = async (symptoms: string) => {
     }
 
     const data = await response.json();
+    console.log("AI Response:", data); // Log the response for debugging
     return data;
   } catch (error) {
     console.error("Error fetching AI response:", error);
@@ -46,9 +47,7 @@ const symptomSuggestions = [
 export default function AIAssistantPage() {
   const [symptoms, setSymptoms] = useState("");
   const [response, setResponse] = useState<{
-    medications: string[];
-    dosage: string;
-    sideEffects: string[];
+    response: string;
   } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -210,68 +209,21 @@ export default function AIAssistantPage() {
                       </TabsTrigger>
                     </TabsList>
 
-                    <AnimatePresence mode="wait">
-                      <TabsContent value="medications" className="mt-4">
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          <h3 className="font-medium text-primary mb-2">Suggested Medications</h3>
-                          <ul className="space-y-2">
-                            {response.medications.map((med, index) => (
-                              <motion.li
-                                key={index}
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                className="flex items-start"
-                              >
-                                <div className="mr-2 mt-1 h-2 w-2 rounded-full bg-primary"></div>
-                                <span>{med}</span>
-                              </motion.li>
-                            ))}
-                          </ul>
-                        </motion.div>
-                      </TabsContent>
-
-                      <TabsContent value="dosage" className="mt-4">
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          <h3 className="font-medium text-primary mb-2">Dosage Guidance</h3>
-                          <p className="whitespace-pre-line">{response.dosage}</p>
-                        </motion.div>
-                      </TabsContent>
-
-                      <TabsContent value="sideEffects" className="mt-4">
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          <h3 className="font-medium text-primary mb-2">Common Side Effects</h3>
-                          <ul className="space-y-2">
-                            {response.sideEffects.map((effect, index) => (
-                              <motion.li
-                                key={index}
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: index * 0.1 }}
-                                className="flex items-start"
-                              >
-                                <div className="mr-2 mt-1 h-2 w-2 rounded-full bg-red-400"></div>
-                                <span>{effect}</span>
-                              </motion.li>
-                            ))}
-                          </ul>
-                        </motion.div>
-                      </TabsContent>
+                    <AnimatePresence mode="sync">
+                      {/* Rendering medications if available */}
+                      {activeTab === "medications" && response.response && (
+                        <TabsContent value="medications" className="mt-4">
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <h3 className="font-medium text-primary mb-2">Suggested Medications</h3>
+                            <p className="whitespace-pre-line">{response.response}</p>
+                          </motion.div>
+                        </TabsContent>
+                      )}
                     </AnimatePresence>
                   </Tabs>
 
